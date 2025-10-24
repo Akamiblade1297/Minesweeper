@@ -1,5 +1,6 @@
 #include "defaults.h"
 #include "arguments.h"
+#include "field.h"
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
@@ -137,5 +138,8 @@ int main ( int argc, char* argv[] ) {
             exit(1);
     }
     if ( !here ) fork(argc, argv);
+
+    Field field ( width, height, bombs );
+    field.printField();
     std::cout << "Launched game successfully!" << std::endl;
 }
