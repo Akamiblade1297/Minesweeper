@@ -23,9 +23,9 @@
 extern std::string terminal;
 extern std::string term_args;
 extern bool here;
-extern int width;
-extern int height;
-extern int bombs;
+extern size_t width;
+extern size_t height;
+extern size_t bombs;
 
 extern bool term_set;
 extern bool targ_set;

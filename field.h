@@ -1,7 +1,7 @@
 #pragma once
 
+#include "bitvector.h"
 #include <algorithm>
-#include <bitset>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -9,10 +9,14 @@
 #include <string>
 
 //COLORS//
+#define RESET     "\e[0m"
+
+#define EXPLODEBG "\e[41m"
 #define UNKNWBG   "\e[48;5;250m"
 #define ACKBG     "\e[48;5;243m"
-#define BORDER    "\e[48;5;240m"
-#define EXPLODEBG "\e[41m"
+
+#define BORDERC   "240m"
+#define BORDER     "\e[4;38;5;" BORDERC "\e[48;5;" BORDERC " "
 
 #define FLAGFG  "\e[31m"
 #define ONEFG   "\e[1;38;21m"
@@ -25,22 +29,23 @@
 #define EITFG   "\e[1;38;5;250m"
 
 //FIELDS
-#define CUNKNOWN UNKNWBG     "  " BORDER " "
-#define CEMPTY   ACKBG       "  " BORDER " "
-#define CONE     ACKBG ONEFG "1 " BORDER " "
-#define CTWO     ACKBG TWOFG "2 " BORDER " "
-#define CTHREE   ACKBG TRIFG "3 " BORDER " "
-#define CFOUR    ACKBG FORFG "4 " BORDER " "
-#define CFIVE    ACKBG FIVFG "5 " BORDER " "
-#define CSIX     ACKBG SIXFG "6 " BORDER " "
-#define CSEVEN   ACKBG SEVFG "7 " BORDER " "
-#define CEIGHT   ACKBG EITFG "8 " BORDER " "
-#define CFLAG    ACKBG       " " BORDER " "
-#define CWRNGFLG UNKNWBG     "X" BORDER " "
-#define CEXPLODE EXPLODEBG   "✶"  BORDER " "
+#define CUNKNOWN UNKNWBG     "__" BORDER 
+#define CEMPTY   ACKBG       "__" BORDER 
+#define CONE     ACKBG ONEFG "1_" BORDER 
+#define CTWO     ACKBG TWOFG "2_" BORDER 
+#define CTHREE   ACKBG TRIFG "3_" BORDER 
+#define CFOUR    ACKBG FORFG "4_" BORDER 
+#define CFIVE    ACKBG FIVFG "5_" BORDER 
+#define CSIX     ACKBG SIXFG "6_" BORDER 
+#define CSEVEN   ACKBG SEVFG "7_" BORDER 
+#define CEIGHT   ACKBG EITFG "8_" BORDER 
+#define CFLAG    ACKBG       "_" BORDER 
+#define CWRNGFLG UNKNWBG     "X" BORDER 
+#define CEXPLODE EXPLODEBG   "✶"  BORDER 
 
-//FIELD
-template<size_t N>
+/**
+ * Minesweeper game field
+ */
 class Field {
 public:
     enum Cell {
@@ -59,24 +64,58 @@ public:
     SEVEN = 7,
     EIGHT = 8,
     };
+private:
+    size_t width, height, bombs;
+    Cell* matrix;
+    BitVector bomb_matrix;
 
-    int get( int i, int j, bool bomb ) {
-        if ( i >= height || j >= width || i < 0 || j < 0 ) {
+    /**
+     * Gives information about bomb in the given coordinates
+     *
+     * @param i First coordinate
+     * @param j Second coordinate
+     * @return Bool value, describes if there is a bomb at coordinates (i, j)
+     */
+    bool is_bomb( size_t i, size_t j ) {
+        if ( i >= height || j >= width ) {
             std::cerr << "ERROR: Tried to get matrix element out of bounds";
             exit(1);
         };
         size_t n = ( i*width ) + j;
-        return bomb ? bomb_matrix[n] : matrix[n];
+        return bomb_matrix[n];
     }
-
-    void printField () {
-        for ( int i = 0 ; i < height ; i++ ) { std::cout << BORDER;
-        for ( int j = 0 ; j < width ; j++ ) {
-            std::cout << Field::Cell_String(this->get(i, j, 0));
-        } std::cout << BORDER << std::endl;
+public:
+    /**
+     * Constructor of the class Field
+     *
+     * @param w Field width
+     * @param h Field height
+     * @param b Bombs count
+     */
+    Field ( int w, int h, int b )
+    : width(w), height(h), bombs(b), bomb_matrix(w*h) {
+        if ( width < 0 || height < 0 || bombs < 0 ) {
+            std::cerr << "ERROR: Width, Height and Bombs count must be positive";
+            exit(1);
         }
+        size_t n = sizeof(Cell) * width*height;
+        this->matrix = (Cell*)malloc(n);
+        if ( matrix == NULL ) {
+            std::cerr << "ERROR: Failed to allocate Field Matrix in memory" << std::endl;
+            exit(2);
+        }
+        memset(matrix, UNKNOWN, n);
+    }
+    ~Field () {
+        free(matrix);
     }
 
+    /**
+     * Gives a string formatted Cell
+     *
+     * @param cell A Cell value
+     * @return A formatted string
+     */
     static std::string Cell_String ( Cell cell ) {
         switch ( cell ) {
             case EMPTY:
@@ -105,29 +144,35 @@ public:
                 return CWRNGFLG;
             case EXPLODED:
                 return CEXPLODE;
+            default:
+                return "ERR";
         }
     }
 
-    Field ( int w, int h, int b )
-    : width(w), height(h), bombs(b) {
-        if ( width < 0 || height < 0 || bombs < 0 ) {
-            std::cerr << "ERROR: Width, Height and Bombs count must be positive";
+    /**
+     * Get value from 2-Dimensional Field matrix
+     *
+     * @param i First coordinate
+     * @param j Second coordinate
+     * @return The Cell of coordinates (i, j)
+     */
+    Cell get( size_t i, size_t j ) {
+        if ( i >= height || j >= width ) {
+            std::cerr << "ERROR: Tried to get matrix element out of bounds";
             exit(1);
-        }
-        size_t n = sizeof(int) * width*height;
-        this->matrix = (int*)malloc(n);
-        if ( matrix == NULL ) {
-            std::cerr << "ERROR: Failed to allocate Field Matrix in memory" << std::endl;
-            exit(2);
-        }
-        bomb_matrix = std::make_unique<std::bitset<N>>(n);
-        memset(matrix, UNKNOWN, n);
+        };
+        size_t n = ( i*width ) + j;
+        return matrix[n];
     }
-    ~Field () {
-        delete[] matrix;
+
+    /**
+     * Print out the game Field
+     */
+    void printField () {
+        for ( int i = 0 ; i < height ; i++ ) { // std::cout << BORDER;
+        for ( int j = 0 ; j < width ; j++ ) {
+            std::cout << Field::Cell_String(this->get(i, j));
+        } std::cout << std::endl;
+        } std::cout << RESET;
     }
-private:
-    int width, height, bombs;
-    int* matrix;
-    std::unique_ptr<std::bitset<N>> bomb_matrix;
 };

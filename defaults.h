@@ -1,8 +1,8 @@
 #pragma once
 //INTEGERS//
-#define DWIDTH 100 // A Field Width
-#define DHIGHT 2   // A Field Height
-#define DBOMBS 80  // A Number of Bombs on the Field
+#define DWIDTH 8  // A Field Width
+#define DHIGHT 8  // A Field Height
+#define DBOMBS 30 // A Number of Bombs on the Field
 
 //STRINGS//
 #define DTERM  "kitty"    // Terminal instance to launch the game

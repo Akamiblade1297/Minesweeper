@@ -10,9 +10,9 @@
 std::string terminal = DTERM;
 std::string term_args = DTARGS;
 bool here  = DHERE;
-int width  = DWIDTH;
-int height = DHIGHT;
-int bombs  = DBOMBS;
+size_t width  = DWIDTH;
+size_t height = DHIGHT;
+size_t bombs  = DBOMBS;
 
 bool term_set, starg_set, here_set, wdth_set, hght_set, bmbs_set = false;
 
@@ -52,7 +52,7 @@ ArgumentError parseArgs( int argc, char* argv[], int &i ) {
             starg_set = true;
         } else if ( !strcmp(argv[i], WIDTH) || !strcmp(argv[i], SWIDTH) ) {
             if ( wdth_set ) return MULTIPLE_ASSIGN;
-            int w;
+            long int w;
             try {
                 w = std::stoi(argv[++i]);
             } catch ( std::invalid_argument )
@@ -64,7 +64,7 @@ ArgumentError parseArgs( int argc, char* argv[], int &i ) {
             wdth_set = true;
         } else if ( !strcmp(argv[i], HIGHT) || !strcmp(argv[i], SHIGHT) ) {
             if ( hght_set ) return MULTIPLE_ASSIGN;
-            int h;
+            long int h;
             try {
                 h = std::stoi(argv[++i]);
             } catch ( std::invalid_argument )
@@ -76,7 +76,7 @@ ArgumentError parseArgs( int argc, char* argv[], int &i ) {
             hght_set = true;
         } else if ( !strcmp(argv[i], BOMBS) || !strcmp(argv[i], SBOMBS) ) {
             if ( bmbs_set ) return MULTIPLE_ASSIGN;
-            int b;
+            long int b;
             try {
                 b = std::stoi(argv[++i]);
             } catch ( std::invalid_argument )
