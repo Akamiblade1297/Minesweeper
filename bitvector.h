@@ -107,8 +107,7 @@ public:
      */
     void set ( size_t i ) {
         PROLOGUE;
-        if ( ! get_indexed(byte_index, bit_val) )
-            flip_indexed(byte_index, bit_val);
+        vec[byte_index] |= bit_val;
     }
 
     /**
@@ -118,8 +117,7 @@ public:
      */
     void reset ( size_t i ) {
         PROLOGUE;
-        if ( get_indexed(byte_index, bit_val) )
-            flip_indexed(byte_index, bit_val);
+        vec[byte_index] &= ~bit_val;
     }
 
     /**
@@ -139,7 +137,7 @@ public:
      *
      * @return Size
      */
-    size_t byte_size () { return size_bytes; }
+    size_t bsize () { return size_bytes; }
 
     /**
      * Get how many elements can be stored
